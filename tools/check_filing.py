@@ -21,7 +21,7 @@ from collections import Counter, defaultdict
 from email import policy
 from email.utils import getaddresses, parseaddr, parsedate_to_datetime
 
-FLAG_ORDER = ["hold", "post-closing", "ethical-wall", "potential-conflict",
+FLAG_ORDER = ["hold", "post-closing", "ethical-wall", "declined-intake", "potential-conflict",
               "new-matter-request", "misdirected", "phishing", "delivery-failure",
               "restricted", "duplicate-retained", "attorney-action"]
 CATS = {"matter", "needs_review", "firm_admin", "non_matter", "duplicate"}
@@ -288,8 +288,13 @@ def main():
         else:
             if mno or r["xref_matters"]:
                 errs.append(f"{f}: {cat} email must not have a matter or xrefs")
-            if os.path.dirname(p) != CAT_DIR[cat]:
-                errs.append(f"{f}: {cat} email must be in {CAT_DIR[cat]}, got {p}")
+            want = CAT_DIR[cat]
+            if "declined-intake" in r["flags"].split(";"):
+                want = "box/Firm_Admin/Declined_Intake"
+                if cat != "firm_admin":
+                    errs.append(f"{f}: declined-intake emails are firm_admin (memo 02)")
+            if os.path.dirname(p) != want:
+                errs.append(f"{f}: {cat} email must be in {want}, got {p}")
     for p in all_files:
         parts = p.split("/")
         if len(parts) >= 4 and parts[1] in ("Clients", "Restricted"):

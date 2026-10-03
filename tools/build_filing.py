@@ -22,7 +22,7 @@ from email.utils import getaddresses, parseaddr, parsedate_to_datetime
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import decisions  # noqa: E402
 
-FLAG_ORDER = ["hold", "post-closing", "ethical-wall", "potential-conflict",
+FLAG_ORDER = ["hold", "post-closing", "ethical-wall", "declined-intake", "potential-conflict",
               "new-matter-request", "misdirected", "phishing", "delivery-failure",
               "restricted", "duplicate-retained", "attorney-action"]
 CAT_DIR = {"needs_review": "_Needs_Review", "firm_admin": "Firm_Admin",
@@ -190,7 +190,8 @@ def build(inp, out, n_memos=0):
                 if matters[xm]["client_no"] != mr["client_no"]:
                     sys.exit(f"{k}: cross-client xref {r['m']} -> {xm}")
         else:
-            r["path"] = f"box/{CAT_DIR[r['cat']]}/{r['name']}"
+            sub = f"/{r['d']['subdir']}" if r["d"].get("subdir") else ""
+            r["path"] = f"box/{CAT_DIR[r['cat']]}{sub}/{r['name']}"
             r["priv"] = "n/a"
 
     # ethical walls: screened person on an email about the matter (primary or xref)
